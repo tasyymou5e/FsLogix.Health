@@ -1,0 +1,121 @@
+<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Name="WndRepair"
+    Title="Repair Plan (preview first)"
+    Width="1180"
+    Height="820"
+    MinWidth="900"
+    MinHeight="620"
+    ShowInTaskbar="False"
+    WindowStartupLocation="CenterOwner">
+    <!-- FSLogixToolkit repair dialog. No event attributes: handlers are attached by the dashboard code.
+         The plan grid is the only editable control: DataGrid.IsReadOnly must stay False because a value of
+         True at grid, column or cell level takes precedence over a value of False - see
+         https://learn.microsoft.com/dotnet/api/system.windows.controls.datagrid.isreadonly -->
+    <Window.Resources>
+        <Style x:Key="LabelText" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,6,4" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="Padding" Value="12,3" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" MinHeight="140" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="170" MinHeight="90" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" x:Name="TxtRepairInfo" TextWrapping="Wrap" Margin="0,0,0,8"
+                   Text="Repair plan. Preview first, then apply." />
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,4">
+            <Button x:Name="BtnRepairSelectReady" Content="Select all Ready actions" />
+            <Button x:Name="BtnRepairSelectNone" Content="Clear selection" />
+            <TextBlock x:Name="TxtRepairPreviewState" VerticalAlignment="Center" TextWrapping="Wrap"
+                       Foreground="#FF57606A" Text="No preview taken yet." />
+        </StackPanel>
+
+        <DataGrid Grid.Row="2" x:Name="GridRepairPlan"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  SelectionMode="Single"
+                  SelectionUnit="FullRow"
+                  HeadersVisibility="Column"
+                  GridLinesVisibility="Horizontal"
+                  AlternatingRowBackground="#FFF6F8FA"
+                  ClipboardCopyMode="IncludeHeader">
+            <DataGrid.Columns>
+                <DataGridCheckBoxColumn Header="Apply" Width="55" Binding="{Binding Selected}" IsReadOnly="False" />
+                <DataGridTextColumn Header="ID" Width="110" Binding="{Binding ActionId}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Title" Width="300" Binding="{Binding Title}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Scope" Width="70" Binding="{Binding Scope}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Tier" Width="45" Binding="{Binding RiskTier}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Status" Width="90" Binding="{Binding Status}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Reason / condition" Width="*" Binding="{Binding Reason}" IsReadOnly="True" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <TextBlock Grid.Row="3" Style="{StaticResource LabelText}" Margin="0,8,0,2" Text="Selected action" />
+
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" x:Name="TxtRepairDetailTitle"
+                       FontWeight="SemiBold" TextWrapping="Wrap" Text="Select a row to see its details." />
+            <TextBox Grid.Row="1" Grid.Column="0" x:Name="TxtRepairDetailBody" IsReadOnly="True" TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto" Margin="0,4,4,4" />
+            <TextBox Grid.Row="1" Grid.Column="1" x:Name="TxtRepairDetailGuidance" IsReadOnly="True" TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto" Margin="4,4,0,4" />
+            <DockPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" LastChildFill="True">
+                <Button DockPanel.Dock="Right" x:Name="BtnRepairOpenSource" Content="Open Source" IsEnabled="False" Margin="8,0,0,0" />
+                <TextBox x:Name="TxtRepairDetailSource" IsReadOnly="True" VerticalContentAlignment="Center" />
+            </DockPanel>
+        </Grid>
+
+        <Grid Grid.Row="5" Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Style="{StaticResource LabelText}" Text="Change reference:" />
+            <TextBox Grid.Column="1" x:Name="TxtRepairChangeReference" MaxLength="128" VerticalContentAlignment="Center" Margin="0,0,16,4" />
+            <TextBlock Grid.Column="2" x:Name="TxtRepairTypedPrompt" Style="{StaticResource LabelText}" Text="Tier 3 confirmation:" />
+            <TextBox Grid.Column="3" x:Name="TxtRepairTypedConfirm" MaxLength="128" VerticalContentAlignment="Center" Margin="0,0,0,4" />
+        </Grid>
+
+        <TextBox Grid.Row="6" x:Name="TxtRepairResult" IsReadOnly="True" TextWrapping="Wrap" Height="90"
+                 VerticalScrollBarVisibility="Auto" Margin="0,6,0,0" />
+
+        <TextBlock Grid.Row="7" x:Name="TxtRepairError" Foreground="#FFA40E26" TextWrapping="Wrap" Margin="0,6,0,0" Text="" />
+
+        <StackPanel Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button x:Name="BtnRepairPreview" Content="Preview (WhatIf)" />
+            <Button x:Name="BtnRepairApply" Content="Apply..." IsEnabled="False" />
+            <Button x:Name="BtnRepairClose" Content="Close" IsCancel="True" />
+        </StackPanel>
+    </Grid>
+</Window>

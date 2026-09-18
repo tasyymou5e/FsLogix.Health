@@ -1,0 +1,501 @@
+<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Name="WndMain"
+    Title="FSLogixToolkit - Office Containers only"
+    Width="1360"
+    Height="880"
+    MinWidth="960"
+    MinHeight="620"
+    WindowStartupLocation="CenterScreen">
+    <!-- FSLogixToolkit dashboard. No event attributes: all handlers are attached by Show-FslDashboard. -->
+    <Window.Resources>
+        <Style TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="True" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="SelectionMode" Value="Single" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="AlternatingRowBackground" Value="#FFF6F8FA" />
+            <Setter Property="HeadersVisibility" Value="Column" />
+            <Setter Property="ClipboardCopyMode" Value="IncludeHeader" />
+            <Setter Property="Margin" Value="0,4,0,0" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="Padding" Value="10,3" />
+        </Style>
+        <Style x:Key="BannerText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Margin" Value="0,0,22,2" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="LabelText" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,6,4" />
+        </Style>
+        <Style x:Key="ValueText" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,0,18,4" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style x:Key="OffMessage" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Foreground" Value="#FF57606A" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,24,0,12" />
+        </Style>
+    </Window.Resources>
+
+    <DockPanel LastChildFill="True">
+        <!-- Menu bar -->
+        <Menu x:Name="MnuMain" DockPanel.Dock="Top" Padding="2">
+            <MenuItem Header="_File">
+                <MenuItem Header="Export _Current View">
+                    <MenuItem x:Name="MnuExportViewCsv" Header="_CSV..." />
+                    <MenuItem x:Name="MnuExportViewHtml" Header="_HTML..." />
+                </MenuItem>
+                <MenuItem Header="Export _All Results">
+                    <MenuItem x:Name="MnuExportAllCsv" Header="_CSV..." />
+                    <MenuItem x:Name="MnuExportAllHtml" Header="_HTML..." />
+                </MenuItem>
+                <MenuItem x:Name="MnuExportBundle" Header="Export _Diagnostic Bundle..." />
+                <Separator />
+                <MenuItem x:Name="MnuOpenReports" Header="Open _Reports Folder" />
+                <MenuItem x:Name="MnuOpenLogs" Header="Open _Logs Folder" />
+                <Separator />
+                <MenuItem x:Name="MnuRelaunchElevated" Header="Relaunch _Elevated (UAC)..." />
+                <MenuItem x:Name="MnuRelaunchUser" Header="Relaunch as Different _User (Smart Card)..." />
+                <Separator />
+                <MenuItem x:Name="MnuExit" Header="E_xit" />
+            </MenuItem>
+            <MenuItem Header="_Discovery">
+                <MenuItem x:Name="MnuDiscRun" Header="_Run Discovery" />
+                <Separator />
+                <MenuItem x:Name="MnuDiscImage" Header="_Image / OS" />
+                <MenuItem x:Name="MnuDiscFslogix" Header="_FSLogix Installation" />
+                <MenuItem x:Name="MnuDiscOffice" Header="_Microsoft 365 Apps" />
+                <MenuItem x:Name="MnuDiscRegistry" Header="Re_gistry Settings" />
+                <MenuItem x:Name="MnuDiscGpo" Header="Group _Policy" />
+                <MenuItem x:Name="MnuDiscStorage" Header="_Storage Locations" />
+            </MenuItem>
+            <MenuItem Header="_Office Containers">
+                <MenuItem x:Name="MnuOdfcRunAll" Header="_Run All Office Container Checks" />
+                <Separator />
+                <MenuItem x:Name="MnuOdfcBestPractice" Header="_Settings &amp; Best Practice" />
+                <MenuItem x:Name="MnuOdfcContainers" Header="_Containers (size / last used)" />
+                <MenuItem x:Name="MnuOdfcPerformance" Header="Storage _Performance" />
+                <MenuItem x:Name="MnuOdfcNetwork" Header="_Network Health" />
+                <MenuItem x:Name="MnuOdfcLogs" Header="_Logs &amp; Events" />
+                <MenuItem x:Name="MnuOdfcKnownIssues" Header="_Known Issues" />
+            </MenuItem>
+            <MenuItem Header="_Profile Containers">
+                <MenuItem x:Name="MnuProfEnable" Header="_Enable Profile Container Checks..." />
+                <Separator />
+                <MenuItem x:Name="MnuProfRunAll" Header="_Run All Profile Container Checks" />
+                <Separator />
+                <MenuItem x:Name="MnuProfBestPractice" Header="_Settings &amp; Best Practice" />
+                <MenuItem x:Name="MnuProfContainers" Header="_Containers (size / last used)" />
+                <MenuItem x:Name="MnuProfPerformance" Header="Storage _Performance" />
+                <MenuItem x:Name="MnuProfNetwork" Header="_Network Health" />
+                <MenuItem x:Name="MnuProfLogs" Header="_Logs &amp; Events" />
+                <MenuItem x:Name="MnuProfKnownIssues" Header="_Known Issues" />
+            </MenuItem>
+            <MenuItem Header="Health _Check">
+                <MenuItem x:Name="MnuHealthFull" Header="Run _Full Health Check (current mode)" />
+                <Separator />
+                <MenuItem Header="_Daily">
+                    <MenuItem x:Name="MnuDailyRunNow" Header="_Run Daily Check Now" />
+                    <MenuItem x:Name="MnuDailyHistory" Header="_View Daily History" />
+                    <MenuItem x:Name="MnuDailySchedule" Header="_Schedule Daily Check..." />
+                    <MenuItem x:Name="MnuDailyRemove" Header="Re_move Daily Schedule" />
+                    <MenuItem x:Name="MnuDailyOpenFolder" Header="_Open Daily Reports Folder" />
+                </MenuItem>
+            </MenuItem>
+            <!-- ToolTipService.ShowOnDisabled makes the "why is this disabled" tooltip visible while the items are
+                 disabled for a standard user; the tooltip text is set by Sync-FslGuiMenuState. -->
+            <MenuItem x:Name="MnuRepairRoot" Header="_Repair">
+                <MenuItem x:Name="MnuRepairPlan" Header="Repair _Plan (Preview)..." ToolTipService.ShowOnDisabled="True" />
+                <MenuItem x:Name="MnuRepairContainer" Header="Reset Office _Container..." ToolTipService.ShowOnDisabled="True" />
+                <Separator />
+                <MenuItem x:Name="MnuRepairUndo" Header="_Undo a Repair Run..." ToolTipService.ShowOnDisabled="True" />
+                <MenuItem x:Name="MnuRepairHistory" Header="Repair _History..." />
+                <MenuItem x:Name="MnuRepairOpenLogs" Header="_Open Repair Logs Folder" />
+            </MenuItem>
+            <MenuItem Header="_Tools">
+                <MenuItem x:Name="MnuToolsPrereq" Header="_Prerequisites" />
+                <MenuItem x:Name="MnuToolsEnvironment" Header="_Environment &amp; Versions" />
+                <MenuItem x:Name="MnuToolsErrorLog" Header="Error _Log" />
+                <Separator />
+                <MenuItem x:Name="MnuToolsDebug" Header="_Debug Logging" IsCheckable="True" />
+                <MenuItem x:Name="MnuToolsOffline" Header="_Offline Mode" IsCheckable="True" />
+            </MenuItem>
+            <MenuItem Header="Opt_ions">
+                <MenuItem Header="_Container Mode">
+                    <MenuItem x:Name="MnuModeOdfc" Header="_Office Containers only (default)" IsCheckable="True" />
+                    <MenuItem x:Name="MnuModeProfiles" Header="_Profile Containers only" IsCheckable="True" />
+                    <MenuItem x:Name="MnuModeBoth" Header="_Both" IsCheckable="True" />
+                </MenuItem>
+                <MenuItem x:Name="MnuOptDiscoverStartup" Header="Run _Discovery at Startup" IsCheckable="True" />
+                <MenuItem x:Name="MnuOptHealthStartup" Header="Run _Health Check at Startup" IsCheckable="True" />
+                <MenuItem Header="_Auto Refresh">
+                    <MenuItem x:Name="MnuRefreshOff" Header="_Off" IsCheckable="True" />
+                    <MenuItem x:Name="MnuRefresh15" Header="_15 min" IsCheckable="True" />
+                    <MenuItem x:Name="MnuRefresh30" Header="_30 min" IsCheckable="True" />
+                    <MenuItem x:Name="MnuRefresh60" Header="_60 min" IsCheckable="True" />
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem x:Name="MnuHelpAbout" Header="_About" />
+                <MenuItem x:Name="MnuHelpUsage" Header="_Command-line Usage" />
+            </MenuItem>
+        </Menu>
+
+        <!-- Header banner -->
+        <Border DockPanel.Dock="Top" Background="#FF0F3D5E" Padding="12,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Text="FSLogixToolkit" FontSize="22" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" Margin="0,0,24,0" />
+                <WrapPanel Grid.Row="0" Grid.Column="1">
+                    <TextBlock x:Name="TxtBannerComputer" Style="{StaticResource BannerText}" Text="Computer: -" />
+                    <TextBlock x:Name="TxtBannerOs" Style="{StaticResource BannerText}" Text="OS: -" />
+                    <TextBlock x:Name="TxtBannerFslogix" Style="{StaticResource BannerText}" Text="FSLogix: -" />
+                    <TextBlock x:Name="TxtBannerOffice" Style="{StaticResource BannerText}" Text="Microsoft 365 Apps: -" />
+                    <TextBlock x:Name="TxtBannerElevated" Style="{StaticResource BannerText}" Text="Elevated: -" FontWeight="SemiBold" />
+                </WrapPanel>
+                <WrapPanel Grid.Row="1" Grid.Column="1">
+                    <TextBlock x:Name="TxtBannerAccount" Style="{StaticResource BannerText}" Text="Running as: -" FontWeight="SemiBold" />
+                    <TextBlock x:Name="TxtBannerLastCheck" Style="{StaticResource BannerText}" Text="Last check: never" />
+                    <TextBlock x:Name="TxtBannerDaily" Style="{StaticResource BannerText}" Text="Daily: unknown" />
+                    <TextBlock x:Name="TxtBannerNote" Style="{StaticResource BannerText}" Foreground="#FFFFD580" Text="" />
+                </WrapPanel>
+                <Border Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" Background="#FFFFD580" CornerRadius="10" Padding="12,4" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtModeBadge" Text="Office Containers only" FontWeight="SemiBold" Foreground="#FF1F2328" />
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Status bar with progress indicator -->
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <ProgressBar x:Name="PrgBusy" Width="140" Height="14" IsIndeterminate="True" Visibility="Collapsed" />
+            </StatusBarItem>
+            <StatusBarItem>
+                <Button x:Name="BtnCancel" Content="Cancel" Padding="8,0" IsEnabled="False" Visibility="Collapsed" />
+            </StatusBarItem>
+            <StatusBarItem>
+                <TextBlock x:Name="TxtStatus" Text="Ready." />
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock x:Name="TxtQueue" Text="" />
+            </StatusBarItem>
+        </StatusBar>
+
+        <Grid Margin="8,6,8,6">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" MinHeight="200" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="190" MinHeight="90" />
+            </Grid.RowDefinitions>
+
+            <!-- Filter bar -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                <TextBlock Text="Status:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <ComboBox x:Name="CmbStatusFilter" Width="110" SelectedIndex="0" Margin="0,0,16,0">
+                    <ComboBoxItem Content="All" />
+                    <ComboBoxItem Content="Fail" />
+                    <ComboBoxItem Content="Error" />
+                    <ComboBoxItem Content="Warn" />
+                    <ComboBoxItem Content="Pass" />
+                    <ComboBoxItem Content="Info" />
+                    <ComboBoxItem Content="Skipped" />
+                </ComboBox>
+                <TextBlock Text="Search:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <TextBox x:Name="TxtSearch" Width="280" VerticalContentAlignment="Center" Margin="0,0,8,0" />
+                <Button x:Name="BtnClearFilter" Content="Clear" />
+                <TextBlock x:Name="TxtViewCount" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="#FF57606A" Text="" />
+            </StackPanel>
+
+            <TabControl x:Name="TabMain" Grid.Row="1">
+                <!-- Overview -->
+                <TabItem x:Name="TabOverview" Header="Overview">
+                    <Grid Margin="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="160" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                            <Button x:Name="BtnOverviewFull" Content="Run Full Health Check" />
+                            <Button x:Name="BtnOverviewDiscovery" Content="Run Discovery" />
+                        </StackPanel>
+                        <TextBlock Grid.Row="1" x:Name="TxtOverviewInfo" TextWrapping="Wrap" Text="Summary by Scope and Category." Margin="0,0,0,2" />
+                        <DataGrid Grid.Row="2" x:Name="GridSummary" />
+                        <TextBlock Grid.Row="3" Text="All results" Style="{StaticResource LabelText}" Margin="0,8,0,0" />
+                        <DataGrid Grid.Row="4" x:Name="GridOverview" />
+                    </Grid>
+                </TabItem>
+
+                <!-- Discovery -->
+                <TabItem x:Name="TabDiscovery" Header="Discovery">
+                    <Grid Margin="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" BorderBrush="#FFD0D7DE" BorderThickness="1" Padding="8" Margin="0,0,0,6">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource LabelText}" Text="Discovered at:" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource ValueText}" x:Name="TxtDiscAt" Text="Not run yet" />
+                                <TextBlock Grid.Row="0" Grid.Column="2" Style="{StaticResource LabelText}" Text="Elevated:" />
+                                <TextBlock Grid.Row="0" Grid.Column="3" Style="{StaticResource ValueText}" x:Name="TxtDiscElevated" Text="-" />
+                                <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource LabelText}" Text="Image / OS:" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource ValueText}" x:Name="TxtDiscImage" Text="-" />
+                                <TextBlock Grid.Row="1" Grid.Column="2" Style="{StaticResource LabelText}" Text="FSLogix:" />
+                                <TextBlock Grid.Row="1" Grid.Column="3" Style="{StaticResource ValueText}" x:Name="TxtDiscFslogix" Text="-" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource LabelText}" Text="Microsoft 365 Apps:" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource ValueText}" x:Name="TxtDiscOffice" Text="-" />
+                                <TextBlock Grid.Row="2" Grid.Column="2" Style="{StaticResource LabelText}" Text="Detected / configured mode:" />
+                                <TextBlock Grid.Row="2" Grid.Column="3" Style="{StaticResource ValueText}" x:Name="TxtDiscMode" Text="-" />
+                                <TextBlock Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" x:Name="TxtDiscMismatch" Foreground="#FFA40E26" FontWeight="SemiBold" TextWrapping="Wrap" Text="" />
+                            </Grid>
+                        </Border>
+                        <TabControl Grid.Row="1" x:Name="TabDiscoveryInner">
+                            <TabItem x:Name="TabDiscImage" Header="Image / OS"><DataGrid x:Name="GridDiscImage" /></TabItem>
+                            <TabItem x:Name="TabDiscFslogix" Header="FSLogix"><DataGrid x:Name="GridDiscFslogix" /></TabItem>
+                            <TabItem x:Name="TabDiscOffice" Header="Microsoft 365 Apps"><DataGrid x:Name="GridDiscOffice" /></TabItem>
+                            <TabItem x:Name="TabDiscRegistry" Header="Registry"><DataGrid x:Name="GridDiscRegistry" /></TabItem>
+                            <TabItem x:Name="TabDiscGpo" Header="Group Policy"><DataGrid x:Name="GridDiscGpo" /></TabItem>
+                            <TabItem x:Name="TabDiscStorage" Header="Storage Locations"><DataGrid x:Name="GridDiscStorage" /></TabItem>
+                            <TabItem x:Name="TabDiscMode" Header="Mode"><DataGrid x:Name="GridDiscMode" /></TabItem>
+                        </TabControl>
+                    </Grid>
+                </TabItem>
+
+                <!-- Office Containers -->
+                <TabItem x:Name="TabOffice" Header="Office Containers">
+                    <Grid Margin="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" x:Name="TxtOfficeOff" Style="{StaticResource OffMessage}" Visibility="Collapsed" Text="" />
+                        <Grid Grid.Row="1" x:Name="PnlOffice">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                                <Button x:Name="BtnOfficeRunAll" Content="Run All Office Container Checks" />
+                            </StackPanel>
+                            <TabControl Grid.Row="1" x:Name="TabOfficeInner">
+                                <TabItem x:Name="TabOfficeBestPractice" Header="Best Practice"><DataGrid x:Name="GridOfficeBestPractice" /></TabItem>
+                                <TabItem x:Name="TabOfficeContainers" Header="Containers"><DataGrid x:Name="GridOfficeContainers" /></TabItem>
+                                <TabItem x:Name="TabOfficePerformance" Header="Performance"><DataGrid x:Name="GridOfficePerformance" /></TabItem>
+                                <TabItem x:Name="TabOfficeNetwork" Header="Network"><DataGrid x:Name="GridOfficeNetwork" /></TabItem>
+                                <TabItem x:Name="TabOfficeDiagnostics" Header="Diagnostics"><DataGrid x:Name="GridOfficeDiagnostics" /></TabItem>
+                            </TabControl>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+                <!-- Profile Containers -->
+                <TabItem x:Name="TabProfiles" Header="Profile Containers">
+                    <Grid Margin="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" x:Name="PnlProfilesOff" Visibility="Collapsed">
+                            <TextBlock x:Name="TxtProfilesOff" Style="{StaticResource OffMessage}" Text="Profile container checks are off (Office containers only)." />
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="BtnProfilesEnable" Content="Enable Profile Container Checks..." />
+                            </StackPanel>
+                        </StackPanel>
+                        <Grid Grid.Row="1" x:Name="PnlProfiles">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                                <Button x:Name="BtnProfilesRunAll" Content="Run All Profile Container Checks" />
+                            </StackPanel>
+                            <TabControl Grid.Row="1" x:Name="TabProfilesInner">
+                                <TabItem x:Name="TabProfilesBestPractice" Header="Best Practice"><DataGrid x:Name="GridProfilesBestPractice" /></TabItem>
+                                <TabItem x:Name="TabProfilesContainers" Header="Containers"><DataGrid x:Name="GridProfilesContainers" /></TabItem>
+                                <TabItem x:Name="TabProfilesPerformance" Header="Performance"><DataGrid x:Name="GridProfilesPerformance" /></TabItem>
+                                <TabItem x:Name="TabProfilesNetwork" Header="Network"><DataGrid x:Name="GridProfilesNetwork" /></TabItem>
+                                <TabItem x:Name="TabProfilesDiagnostics" Header="Diagnostics"><DataGrid x:Name="GridProfilesDiagnostics" /></TabItem>
+                            </TabControl>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+                <!-- Environment & Policy -->
+                <TabItem x:Name="TabEnvPolicy" Header="Environment &amp; Policy">
+                    <Grid Margin="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                            <Button x:Name="BtnEnvRun" Content="Environment &amp; Versions" />
+                            <Button x:Name="BtnPolicyRun" Content="Group Policy (current mode)" />
+                            <Button x:Name="BtnPrereqRun" Content="Prerequisites" />
+                        </StackPanel>
+                        <TabControl Grid.Row="1" x:Name="TabEnvInner">
+                            <TabItem x:Name="TabEnvItemEnvironment" Header="Environment &amp; Versions"><DataGrid x:Name="GridEnvironment" /></TabItem>
+                            <TabItem x:Name="TabEnvItemPolicy" Header="Group Policy"><DataGrid x:Name="GridPolicy" /></TabItem>
+                            <TabItem x:Name="TabEnvItemPrerequisites" Header="Prerequisites"><DataGrid x:Name="GridPrerequisites" /></TabItem>
+                        </TabControl>
+                    </Grid>
+                </TabItem>
+
+                <!-- Daily Health -->
+                <TabItem x:Name="TabDaily" Header="Daily Health">
+                    <Grid Margin="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" BorderBrush="#FFD0D7DE" BorderThickness="1" Padding="8" Margin="0,0,0,6">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource LabelText}" Text="Scheduled:" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource ValueText}" x:Name="TxtDailyRegistered" Text="Unknown" />
+                                <TextBlock Grid.Row="0" Grid.Column="2" Style="{StaticResource LabelText}" Text="Task state:" />
+                                <TextBlock Grid.Row="0" Grid.Column="3" Style="{StaticResource ValueText}" x:Name="TxtDailyState" Text="-" />
+                                <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource LabelText}" Text="Time / run as:" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource ValueText}" x:Name="TxtDailyAt" Text="-" />
+                                <TextBlock Grid.Row="1" Grid.Column="2" Style="{StaticResource LabelText}" Text="Container scope:" />
+                                <TextBlock Grid.Row="1" Grid.Column="3" Style="{StaticResource ValueText}" x:Name="TxtDailyScope" Text="-" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource LabelText}" Text="Next run:" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource ValueText}" x:Name="TxtDailyNext" Text="-" />
+                                <TextBlock Grid.Row="2" Grid.Column="2" Style="{StaticResource LabelText}" Text="Last run / result:" />
+                                <TextBlock Grid.Row="2" Grid.Column="3" Style="{StaticResource ValueText}" x:Name="TxtDailyLast" Text="-" />
+                                <TextBlock Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" x:Name="TxtDailyNote" TextWrapping="Wrap" Foreground="#FF57606A" Text="Double-click a history row to open its HTML report." />
+                            </Grid>
+                        </Border>
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,6">
+                            <Button x:Name="BtnDailyRunNow" Content="Run Daily Check Now" />
+                            <Button x:Name="BtnDailySchedule" Content="Schedule..." />
+                            <Button x:Name="BtnDailyRemove" Content="Remove Schedule" />
+                            <Button x:Name="BtnDailyRefresh" Content="Refresh" />
+                            <Button x:Name="BtnDailyOpenFolder" Content="Open Daily Reports Folder" />
+                        </StackPanel>
+                        <TextBlock Grid.Row="2" Text="History (newest first)" Style="{StaticResource LabelText}" />
+                        <DataGrid Grid.Row="3" x:Name="GridDailyHistory" />
+                    </Grid>
+                </TabItem>
+
+                <!-- Repair -->
+                <TabItem x:Name="TabRepair" Header="Repair">
+                    <Grid Margin="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="120" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" x:Name="TxtRepairTabNote" TextWrapping="Wrap" Margin="0,0,0,6"
+                                   Text="Repairs need an elevated session. Use File &gt; Relaunch Elevated (UAC)... or File &gt; Relaunch as Different User (Smart Card)..." />
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,6">
+                            <Button x:Name="BtnRepairPlanOpen" Content="Repair Plan (Preview)..." />
+                            <Button x:Name="BtnRepairContainerOpen" Content="Reset Office Container..." />
+                            <Button x:Name="BtnRepairHistoryRefresh" Content="Refresh History" />
+                            <Button x:Name="BtnRepairUndoRun" Content="Undo Selected Run..." />
+                            <Button x:Name="BtnRepairOpenFolder" Content="Open Repair Logs Folder" />
+                        </StackPanel>
+                        <TabControl Grid.Row="2" x:Name="TabRepairInner">
+                            <TabItem x:Name="TabRepairRuns" Header="Repair Runs"><DataGrid x:Name="GridRepairHistory" /></TabItem>
+                            <TabItem x:Name="TabRepairResults" Header="Repair Results"><DataGrid x:Name="GridRepairResults" /></TabItem>
+                        </TabControl>
+                        <TextBlock Grid.Row="3" Text="Selected repair run" Style="{StaticResource LabelText}" Margin="0,8,0,2" />
+                        <TextBox Grid.Row="4" x:Name="TxtRepairRunDetail" IsReadOnly="True" TextWrapping="Wrap"
+                                 VerticalScrollBarVisibility="Auto" Text="Select a repair run to see its details." />
+                    </Grid>
+                </TabItem>
+
+                <!-- Errors & Log -->
+                <TabItem x:Name="TabErrors" Header="Errors &amp; Log">
+                    <Grid Margin="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="180" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                            <Button x:Name="BtnErrorsRefresh" Content="Refresh Error Log" />
+                            <Button x:Name="BtnOpenLogFolder" Content="Open Logs Folder" />
+                        </StackPanel>
+                        <DataGrid Grid.Row="1" x:Name="GridErrors" />
+                        <TextBlock Grid.Row="2" x:Name="TxtLogPath" Style="{StaticResource LabelText}" Margin="0,8,0,2" Text="Log" />
+                        <TextBox Grid.Row="3" x:Name="TxtLogTail" IsReadOnly="True" FontFamily="Consolas" TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+                    </Grid>
+                </TabItem>
+            </TabControl>
+
+            <GridSplitter Grid.Row="2" Height="5" HorizontalAlignment="Stretch" ResizeDirection="Rows" Background="#FFD0D7DE" Margin="0,4,0,4" />
+
+            <!-- Details panel -->
+            <GroupBox Grid.Row="3" Header="Details">
+                <Grid Margin="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" x:Name="TxtDetailTitle" FontWeight="SemiBold" TextWrapping="Wrap" Text="Select a row to see its details." />
+                    <TextBox Grid.Row="1" Grid.Column="0" x:Name="TxtDetailMessage" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,4,4,4" />
+                    <TextBox Grid.Row="1" Grid.Column="1" x:Name="TxtDetailRecommendation" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="4,4,0,4" />
+                    <DockPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" LastChildFill="True">
+                        <Button DockPanel.Dock="Right" x:Name="BtnOpenSource" Content="Open Source" IsEnabled="False" Margin="8,0,0,0" />
+                        <TextBox x:Name="TxtDetailSource" IsReadOnly="True" VerticalContentAlignment="Center" />
+                    </DockPanel>
+                </Grid>
+            </GroupBox>
+        </Grid>
+    </DockPanel>
+</Window>
